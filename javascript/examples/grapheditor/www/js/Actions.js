@@ -800,49 +800,49 @@ Actions.prototype.init = function()
 			graph.container.scrollLeft = Math.min(pad.x * graph.view.scale, (graph.container.scrollWidth - graph.container.clientWidth) / 2) - 1;
 		}
 	}), null, null, Editor.ctrlKey + '+J');
-	this.addAction('fitTwoPages', mxUtils.bind(this, function()
-	{
-		if (!graph.pageVisible)
-		{
-			this.get('pageView').funct();
-		}
-		
-		var fmt = graph.pageFormat;
-		var ps = graph.pageScale;
-		var cw = graph.container.clientWidth - 10;
-		var ch = graph.container.clientHeight - 10;
-		
-		var scale = Math.floor(20 * Math.min(cw / (2 * fmt.width) / ps, ch / fmt.height / ps)) / 20;
-		graph.zoomTo(scale);
-		
-		if (mxUtils.hasScrollbars(graph.container))
-		{
-			var pad = graph.getPagePadding();
-			graph.container.scrollTop = Math.min(pad.y, (graph.container.scrollHeight - graph.container.clientHeight) / 2);
-			graph.container.scrollLeft = Math.min(pad.x, (graph.container.scrollWidth - graph.container.clientWidth) / 2);
-		}
-	}), null, null, Editor.ctrlKey + '+Shift+J');
-	this.addAction('fitPageWidth', mxUtils.bind(this, function()
-	{
-		if (!graph.pageVisible)
-		{
-			this.get('pageView').funct();
-		}
-		
-		var fmt = graph.pageFormat;
-		var ps = graph.pageScale;
-		var cw = graph.container.clientWidth - 10;
+	// this.addAction('fitTwoPages', mxUtils.bind(this, function()
+	// {
+	// 	if (!graph.pageVisible)
+	// 	{
+	// 		this.get('pageView').funct();
+	// 	}
+	// 	
+	// 	var fmt = graph.pageFormat;
+	// 	var ps = graph.pageScale;
+	// 	var cw = graph.container.clientWidth - 10;
+	// 	var ch = graph.container.clientHeight - 10;
+	// 	
+	// 	var scale = Math.floor(20 * Math.min(cw / (2 * fmt.width) / ps, ch / fmt.height / ps)) / 20;
+	// 	graph.zoomTo(scale);
+	// 	
+	// 	if (mxUtils.hasScrollbars(graph.container))
+	// 	{
+	// 		var pad = graph.getPagePadding();
+	// 		graph.container.scrollTop = Math.min(pad.y, (graph.container.scrollHeight - graph.container.clientHeight) / 2);
+	// 		graph.container.scrollLeft = Math.min(pad.x, (graph.container.scrollWidth - graph.container.clientWidth) / 2);
+	// 	}
+	// }), null, null, Editor.ctrlKey + '+Shift+J');
+	// this.addAction('fitPageWidth', mxUtils.bind(this, function()
+	// {
+	// 	if (!graph.pageVisible)
+	// 	{
+	// 		this.get('pageView').funct();
+	// 	}
+	// 	
+	// 	var fmt = graph.pageFormat;
+	// 	var ps = graph.pageScale;
+	// 	var cw = graph.container.clientWidth - 10;
 
-		var scale = Math.floor(20 * cw / fmt.width / ps) / 20;
-		graph.zoomTo(scale);
-		
-		if (mxUtils.hasScrollbars(graph.container))
-		{
-			var pad = graph.getPagePadding();
-			graph.container.scrollLeft = Math.min(pad.x * graph.view.scale,
-				(graph.container.scrollWidth - graph.container.clientWidth) / 2);
-		}
-	}));
+	// 	var scale = Math.floor(20 * cw / fmt.width / ps) / 20;
+	// 	graph.zoomTo(scale);
+	// 	
+	// 	if (mxUtils.hasScrollbars(graph.container))
+	// 	{
+	// 		var pad = graph.getPagePadding();
+	// 		graph.container.scrollLeft = Math.min(pad.x * graph.view.scale,
+	// 			(graph.container.scrollWidth - graph.container.clientWidth) / 2);
+	// 	}
+	// }));
 	this.put('customZoom', new Action(mxResources.get('custom') + '...', mxUtils.bind(this, function()
 	{
 		var dlg = new FilenameDialog(this.editorUi, parseInt(graph.getView().getScale() * 100), mxResources.get('apply'), mxUtils.bind(this, function(newValue)

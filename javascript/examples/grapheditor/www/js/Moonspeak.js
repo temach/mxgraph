@@ -51,6 +51,10 @@ MoonspeakEditor.prototype.preinit = function()
     {
         return null;
     }
+
+    // configure how background pages are displayed
+    Graph.prototype.defaultPageVisible = false;
+    EditorUi.prototype.wheelZoomDelay = 50;
 };
 
 /**
@@ -72,3 +76,11 @@ MoonspeakEditor.prototype.init = function()
  * ===============================================================
  * Place prototype overrides below
  */
+
+// Overridden to limit zoom to 1% - 800%.
+Graph.prototype.zoom = function(factor, center)
+{
+	factor = Math.max(0.01, Math.min(this.view.scale * factor, 8)) / this.view.scale;
+	
+	mxGraph.prototype.zoom.apply(this, arguments);
+};
