@@ -54,7 +54,8 @@ MoonspeakEditor.prototype.preinit = function()
 
     // configure how background pages are displayed
     Graph.prototype.defaultPageVisible = false;
-    EditorUi.prototype.wheelZoomDelay = 50;
+    EditorUi.prototype.wheelZoomDelay = 80;
+    EditorUi.prototype.buttonZoomDelay = 80;
 };
 
 /**
@@ -69,6 +70,14 @@ MoonspeakEditor.prototype.init = function()
     // hide the left sidebar
     this.editorUi.hsplitPosition = 0;
     this.editorUi.refresh();
+
+    var divRight = document.createElement('div');
+    divRight.className = "bottomright deadzone";
+    document.body.appendChild(divRight);
+
+    var divLeft = document.createElement('div');
+    divLeft.className = "bottomleft deadzone";
+    document.body.appendChild(divLeft);
 };
 
 

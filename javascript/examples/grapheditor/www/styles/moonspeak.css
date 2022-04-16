@@ -18,3 +18,33 @@
 .styled-scrollbars::-webkit-scrollbar-track { /* Background */
   background: rgba(0,0,0,0);
 }
+
+
+.deadzone {
+}
+
+.deadzone:hover {
+    background-color: yellow;
+}
+
+.bottomleft {
+    position: absolute;
+    left: 1vmin;
+    bottom: 1vmin;
+    border-radius: 10%;
+    width: 15vmin;
+    height: 15vmin;
+    background-color: red;
+    z-index: 100;
+}
+
+.bottomright {
+    position: absolute;
+    right: 1vmin;
+    bottom: 1vmin;
+    border-radius: 10%;
+    width: 15vmin;
+    height: 15vmin;
+    background-color: red;
+    z-index: 100;
+}
