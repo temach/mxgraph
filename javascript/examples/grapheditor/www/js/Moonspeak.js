@@ -74,10 +74,14 @@ MoonspeakEditor.prototype.preinit = function()
         }
     }
 
-
-    // When moving the edge, snap and move the start or end port
-    // becasue rigidly moving the whole edge is not useful
-    // style[mxConstants.STYLE_MOVABLE] = 0;
+    // easier selection of edges 
+    let sqrtDist = function(ax, ay, bx, by)
+    {
+        var dx = ax - bx;
+        var dy = ay - by;
+        var tmp = dx * dx + dy * dy;
+        return tmp;
+    };
 
     var mxEdgeHandlerGetHandleForEvent = mxEdgeHandler.prototype.getHandleForEvent;
     mxEdgeHandler.prototype.getHandleForEvent = function(me)
@@ -129,6 +133,14 @@ MoonspeakEditor.prototype.init = function()
     var divLeft = document.createElement('div');
     divLeft.className = "bottomleft deadzone";
     document.body.appendChild(divLeft);
+
+    // adjust edge style
+    var style = this.editorUi.editor.graph.getStylesheet().getDefaultEdgeStyle();
+    style[mxConstants.STYLE_ROUNDED] = true;
+    style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
+    // When moving the edge, snap and move the start or end port
+    // becasue rigidly moving the whole edge is not useful
+    style[mxConstants.STYLE_MOVABLE] = 0;
 };
 
 
@@ -137,10 +149,10 @@ MoonspeakEditor.prototype.init = function()
  * Place prototype overrides below
  */
 
-// Overridden to limit zoom to 1% - 800%.
+// Overridden to limit zoom to 10% - 600%.
 Graph.prototype.zoom = function(factor, center)
 {
-	factor = Math.max(0.01, Math.min(this.view.scale * factor, 8)) / this.view.scale;
+	factor = Math.max(0.1, Math.min(this.view.scale * factor, 6)) / this.view.scale;
 	mxGraph.prototype.zoom.apply(this, arguments);
 };
 
@@ -158,5 +170,9 @@ mxConstraintHandler.prototype.setFocus = function(me, state, source)
     this.destroyFocusHighlight();
 }
 
-
+// Consider all wheel events to be scroll events
+Graph.prototype.isZoomWheelEvent = function(evt)
+{
+    return true;
+}
 
