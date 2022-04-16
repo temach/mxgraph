@@ -36,7 +36,7 @@ MoonspeakEditor.prototype.preinit = function()
     // scrollbars must be enabled at all times so iframes do not reload
     Graph.prototype.defaultScrollbars = true;
 
-    // this function must be overriden to retain scrollbar styling
+    // this function must be overriden to retain thin scrollbar styling
 	let mxGraphView_validateBackgroundStyles = mxGraphView.prototype.validateBackgroundStyles;
     mxGraphView.prototype.validateBackgroundStyles = function()
     {
@@ -65,8 +65,6 @@ MoonspeakEditor.prototype.init = function()
     // hide the left sidebar
     this.editorUi.hsplitPosition = 0;
     this.editorUi.refresh();
-
-    // make scrollbars less visible
 };
 
 
