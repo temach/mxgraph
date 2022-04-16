@@ -453,15 +453,15 @@ Menus.prototype.init = function()
 			        'resetView', 'zoomIn', 'zoomOut'], parent));
 	})));
 	// Two special dropdowns that are only used in the toolbar
-	this.put('viewPanels', new Menu(mxUtils.bind(this, function(menu, parent)
-	{
-		if (this.editorUi.format != null)
-		{
-			this.addMenuItems(menu, ['formatPanel'], parent);
-		}
-		
-		this.addMenuItems(menu, ['outline', 'layers'], parent);
-	})));
+	// this.put('viewPanels', new Menu(mxUtils.bind(this, function(menu, parent)
+	// {
+	// 	if (this.editorUi.format != null)
+	// 	{
+	// 		this.addMenuItems(menu, ['formatPanel'], parent);
+	// 	}
+	// 	
+	// 	this.addMenuItems(menu, ['outline', 'layers'], parent);
+	// })));
 	this.put('viewZoom', new Menu(mxUtils.bind(this, function(menu, parent)
 	{
 		this.addMenuItems(menu, ['resetView', '-'], parent);

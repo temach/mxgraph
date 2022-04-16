@@ -45,6 +45,12 @@ MoonspeakEditor.prototype.preinit = function()
         this.graph.container.classList.add("styled-scrollbars");
     }
 
+    // disable creation of top menubar
+    EditorUi.prototype.menubarHeight = 0;
+    Menus.prototype.createMenubar = function(container)
+    {
+        return null;
+    }
 };
 
 /**
