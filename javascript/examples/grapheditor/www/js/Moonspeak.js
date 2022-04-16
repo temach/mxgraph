@@ -56,6 +56,55 @@ MoonspeakEditor.prototype.preinit = function()
     Graph.prototype.defaultPageVisible = false;
     EditorUi.prototype.wheelZoomDelay = 80;
     EditorUi.prototype.buttonZoomDelay = 80;
+
+    // all labels are html, to allow iframes
+    mxGraph.prototype.htmlLabels = true;
+
+    var mxGraphConvertValueToString = mxGraph.prototype.convertValueToString;
+    mxGraph.prototype.convertValueToString = function(cell)
+    {
+        if (cell.div != null) {
+            return cell.div;
+        } else if (mxUtils.isNode(cell.value) && cell.value.nodeName.toLowerCase() == 'iframe') {
+            // Returns a DOM for the label
+            cell.div = cell.value;
+            return cell.div;
+        } else {
+            return mxGraphConvertValueToString.apply(this, arguments);
+        }
+    }
+
+
+    // When moving the edge, snap and move the start or end port
+    // becasue rigidly moving the whole edge is not useful
+    // style[mxConstants.STYLE_MOVABLE] = 0;
+
+    var mxEdgeHandlerGetHandleForEvent = mxEdgeHandler.prototype.getHandleForEvent;
+    mxEdgeHandler.prototype.getHandleForEvent = function(me)
+    {
+        // call the original
+        var handle = mxEdgeHandlerGetHandleForEvent.apply(this, arguments);
+ 
+        // if handle is null, meaning the edge line was clicked, not any specific marker on the edge
+        // then force select one of the end markers (either start or end port)
+        if (handle == null && this.bends != null && me.state != null && me.state.cell == this.state.cell)
+        {
+            var start = this.bends[0];
+            var startDist = sqrtDist(me.getGraphX(), me.getGraphY(), start.bounds.getCenterX(), start.bounds.getCenterY());
+
+            var end = this.bends[this.bends.length - 1];
+            var endDist = sqrtDist(me.getGraphX(), me.getGraphY(), end.bounds.getCenterX(), end.bounds.getCenterY());
+
+            if (startDist < endDist) {
+                return 0;
+            } else {
+                return this.bends.length - 1;
+            }
+        }
+ 
+        return handle;
+    };
+
 };
 
 /**
@@ -70,7 +119,6 @@ MoonspeakEditor.prototype.init = function()
     // hide the left sidebar
     this.editorUi.hsplitPosition = 0;
     this.editorUi.refresh();
-
 
     // becasue editor initialisations use document.body.appendChild
     // the two deadzones must be added AFTER everyone has initialised
@@ -109,5 +157,6 @@ mxConstraintHandler.prototype.setFocus = function(me, state, source)
     this.destroyIcons();
     this.destroyFocusHighlight();
 }
+
 
 
