@@ -71,6 +71,9 @@ MoonspeakEditor.prototype.init = function()
     this.editorUi.hsplitPosition = 0;
     this.editorUi.refresh();
 
+
+    // becasue editor initialisations use document.body.appendChild
+    // the two deadzones must be added AFTER everyone has initialised
     var divRight = document.createElement('div');
     divRight.className = "bottomright deadzone";
     document.body.appendChild(divRight);
@@ -90,6 +93,21 @@ MoonspeakEditor.prototype.init = function()
 Graph.prototype.zoom = function(factor, center)
 {
 	factor = Math.max(0.01, Math.min(this.view.scale * factor, 8)) / this.view.scale;
-	
 	mxGraph.prototype.zoom.apply(this, arguments);
 };
+
+// Render only 4 sizers on each box, not singleSizer, not all sizers
+mxVertexHandler.prototype.isSizerVisible = function(index)
+{
+    return index === 0 || index === 2 || index === 5 || index === 7;
+};
+
+// Do not show crosses and green circles that show extra
+// focus points when mousing over a shape
+mxConstraintHandler.prototype.setFocus = function(me, state, source)
+{
+    this.destroyIcons();
+    this.destroyFocusHighlight();
+}
+
+
