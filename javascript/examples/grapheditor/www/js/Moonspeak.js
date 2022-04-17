@@ -25,7 +25,6 @@ mxUtils.extend(MoonspeakEditor, mxEventSource);
  */
 MoonspeakEditor.prototype.preinit = function()
 {
-
     // hide the left sidebar
     EditorUi.prototype.splitSize = 0;
     EditorUi.prototype.hsplitPosition = 0;
@@ -122,14 +121,6 @@ MoonspeakEditor.prototype.init = function()
     this.editorUi.hsplitPosition = 0;
     this.editorUi.refresh();
 
-    // adjust edge style
-    var style = this.editorUi.editor.graph.getStylesheet().getDefaultEdgeStyle();
-    style[mxConstants.STYLE_ROUNDED] = true;
-    style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
-    // When moving the edge, snap and move the start or end port
-    // becasue rigidly moving the whole edge is not useful
-    style[mxConstants.STYLE_MOVABLE] = 0;
-
     // Resize IFrame and Rectangle together
     let iframeRectanglePadding = 20;
     this.editorUi.editor.graph.addListener(mxEvent.CELLS_RESIZED, function(sender, evt)
@@ -218,28 +209,8 @@ MoonspeakEditor.prototype.init = function()
     document.body.appendChild(divLeft);
 };
 
-// /**
-//  * Adds a handler for inserting the cell with a single click.
-//  */
-// MoonspeakEditor.prototype.insertIframe = function(cells, ds, evt, elt)
-// {
-// 	var graph = this.editorUi.editor.graph;
-// 	graph.container.focus();
-// 	
-// 	// Shift+Click updates shape
-// 	else if (mxEvent.isShiftDown(evt) && !graph.isSelectionEmpty())
-// 	{
-// 		this.updateShapes(cells[0], graph.getSelectionCells());
-// 		graph.scrollCellToVisible(graph.getSelectionCell());
-// 	}
-// 	else
-// 	{
-// 		var pt = (mxEvent.isAltDown(evt)) ? graph.getFreeInsertPoint() :
-// 			graph.getCenterInsertPoint(graph.getBoundingBoxFromGeometry(cells, true));
-// 		ds.drop(graph, evt, null, pt.x, pt.y, true);
-// 	}
-// };
 
+// Inserts a new IFrame at center of screen
 MoonspeakEditor.prototype.addIframe = function(iframeElem)
 {
     let graph = this.editorUi.editor.graph;
@@ -277,7 +248,6 @@ MoonspeakEditor.prototype.mapBroadcast = function(event, map)
         };
     });
 }
-
 
 
 /**
