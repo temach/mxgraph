@@ -114,6 +114,8 @@ MoonspeakEditor.prototype.preinit = function()
  */
 MoonspeakEditor.prototype.init = function()
 {
+    let graph = this.editorUi.editor.graph;
+
     // hide the right sidebar
     this.editorUi.toggleFormatPanel(false);
 
@@ -123,7 +125,7 @@ MoonspeakEditor.prototype.init = function()
 
     // Resize IFrame and Rectangle together
     let iframeRectanglePadding = 20;
-    this.editorUi.editor.graph.addListener(mxEvent.CELLS_RESIZED, function(sender, evt)
+    graph.addListener(mxEvent.CELLS_RESIZED, function(sender, evt)
     {
       var cells = evt.getProperty('cells');
       
@@ -137,6 +139,7 @@ MoonspeakEditor.prototype.init = function()
           {
               cell.value.style.width = (geo.width - iframeRectanglePadding) + "px";
               cell.value.style.height = (geo.height - iframeRectanglePadding) + "px";
+              cell.value.style.border = 'none';
           }
         }
       }
@@ -144,8 +147,8 @@ MoonspeakEditor.prototype.init = function()
 
     // Everything is an HTML label now
     // override in instance instead of prototype, because original func is defined during .init()
-    let graphIsHtmlLabel = this.editorUi.editor.graph.isHtmlLabel;
-    this.editorUi.editor.graph.isHtmlLabel = function(cell)
+    let graphIsHtmlLabel = graph.isHtmlLabel;
+    graph.isHtmlLabel = function(cell)
     {
         // adjust html label check by checking for iframe style tag (also call the original)
 		var style = this.getCurrentCellStyle(cell);
@@ -154,11 +157,15 @@ MoonspeakEditor.prototype.init = function()
 
     // Consider all wheel events to be scroll events
     // override in instance instead of prototype, because original func is defined during .init()
-    let graphIsZoomWheelEvent = this.editorUi.editor.graph.isZoomWheelEvent;
-    this.editorUi.editor.graph.isZoomWheelEvent = function(evt)
+    let graphIsZoomWheelEvent = graph.isZoomWheelEvent;
+    graph.isZoomWheelEvent = function(evt)
     {
         return true;
     }
+
+    // disable tooltips
+    graph.setTooltips(false);
+
 
     // see: https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
     // handle message events
@@ -220,10 +227,14 @@ MoonspeakEditor.prototype.addIframe = function(iframeElem)
     var v1 = null;
     var pt = graph.getCenterInsertPoint();
 
+    // just set containing rect width and height to be similar to Iframe default width and height
+    let width = 320;
+    let height = 170;
+
     model.beginUpdate();
     try
     {
-        v1 = graph.insertVertex(parent, null, iframeElem, pt.x, pt.y, 120, 120, 'iframe=1;');
+        v1 = graph.insertVertex(parent, null, iframeElem, pt.x, pt.y, width, height, 'iframe=1;');
     }
     finally
     {
