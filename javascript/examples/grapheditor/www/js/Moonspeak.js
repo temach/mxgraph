@@ -57,9 +57,7 @@ MoonspeakEditor.prototype.preinit = function()
     EditorUi.prototype.wheelZoomDelay = 80;
     EditorUi.prototype.buttonZoomDelay = 80;
 
-    // all labels are html, to allow iframes
-    mxGraph.prototype.htmlLabels = true;
-
+    // allow div field on nodes and render it directly as iframe
     var mxGraphConvertValueToString = mxGraph.prototype.convertValueToString;
     mxGraph.prototype.convertValueToString = function(cell)
     {
@@ -124,6 +122,88 @@ MoonspeakEditor.prototype.init = function()
     this.editorUi.hsplitPosition = 0;
     this.editorUi.refresh();
 
+    // adjust edge style
+    var style = this.editorUi.editor.graph.getStylesheet().getDefaultEdgeStyle();
+    style[mxConstants.STYLE_ROUNDED] = true;
+    style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
+    // When moving the edge, snap and move the start or end port
+    // becasue rigidly moving the whole edge is not useful
+    style[mxConstants.STYLE_MOVABLE] = 0;
+
+    // Resize IFrame and Rectangle together
+    let iframeRectanglePadding = 20;
+    this.editorUi.editor.graph.addListener(mxEvent.CELLS_RESIZED, function(sender, evt)
+    {
+      var cells = evt.getProperty('cells');
+      
+      if (cells != null)
+      {
+        for (var i = 0; i < cells.length; i++)
+        {
+          let cell = cells[i];
+          let geo = this.getCellGeometry(cell);
+          cell.value.style.width = (geo.width - iframeRectanglePadding) + "px";
+          cell.value.style.height = (geo.height - iframeRectanglePadding) + "px";
+        }
+      }
+    });
+
+    // Everything is an HTML label now
+    // override in instance instead of prototype, because original func is defined during .init()
+    let graphIsHtmlLabel = this.editorUi.editor.graph.isHtmlLabel;
+    this.editorUi.editor.graph.isHtmlLabel = function(cell)
+    {
+        // adjust html label check by checking for iframe style tag (also call the original)
+		var style = this.getCurrentCellStyle(cell);
+		return (style != null) ? (style['iframe'] == '1' || graphIsHtmlLabel.apply(this, arguments)) : false;
+    }
+
+    // Consider all wheel events to be scroll events
+    // override in instance instead of prototype, because original func is defined during .init()
+    let graphIsZoomWheelEvent = this.editorUi.editor.graph.isZoomWheelEvent;
+    this.editorUi.editor.graph.isZoomWheelEvent = function(evt)
+    {
+        return true;
+    }
+
+    // see: https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
+    // handle message events
+    this.features = new Map();
+
+    window.addEventListener("message", (event) => 
+    {
+        if (event.origin !== window.top.location.origin) {
+            // we only accept messages from the IFrames (must be on the same domain)
+            return;
+        }
+
+        console.log("mxgraph received: ");
+        console.log(event.data);
+
+        if (! ("info" in event.data)) {
+            console.log("No 'info' field in message, skipping");
+            return;
+        }
+
+        if (event.data["info"].includes("created feature")) {
+            let iframe = document.createElement("iframe");
+            iframe.src = event.data["src"];
+            let result = this.addIframe(iframe)
+            if (result !== null) {
+                let featureExtraInfo = {};
+                this.features.set(iframe, featureExtraInfo);
+            }
+
+        } else if (event.data["info"].includes("broadcast")) {
+            this.mapBroadcast(event, this.features);
+
+        } else {
+            console.log("Can not understand message info:" + event.data["info"]);
+            return;
+        }
+    });
+
+
     // becasue editor initialisations use document.body.appendChild
     // the two deadzones must be added AFTER everyone has initialised
     var divRight = document.createElement('div');
@@ -133,15 +213,68 @@ MoonspeakEditor.prototype.init = function()
     var divLeft = document.createElement('div');
     divLeft.className = "bottomleft deadzone";
     document.body.appendChild(divLeft);
-
-    // adjust edge style
-    var style = this.editorUi.editor.graph.getStylesheet().getDefaultEdgeStyle();
-    style[mxConstants.STYLE_ROUNDED] = true;
-    style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
-    // When moving the edge, snap and move the start or end port
-    // becasue rigidly moving the whole edge is not useful
-    style[mxConstants.STYLE_MOVABLE] = 0;
 };
+
+// /**
+//  * Adds a handler for inserting the cell with a single click.
+//  */
+// MoonspeakEditor.prototype.insertIframe = function(cells, ds, evt, elt)
+// {
+// 	var graph = this.editorUi.editor.graph;
+// 	graph.container.focus();
+// 	
+// 	// Shift+Click updates shape
+// 	else if (mxEvent.isShiftDown(evt) && !graph.isSelectionEmpty())
+// 	{
+// 		this.updateShapes(cells[0], graph.getSelectionCells());
+// 		graph.scrollCellToVisible(graph.getSelectionCell());
+// 	}
+// 	else
+// 	{
+// 		var pt = (mxEvent.isAltDown(evt)) ? graph.getFreeInsertPoint() :
+// 			graph.getCenterInsertPoint(graph.getBoundingBoxFromGeometry(cells, true));
+// 		ds.drop(graph, evt, null, pt.x, pt.y, true);
+// 	}
+// };
+
+MoonspeakEditor.prototype.addIframe = function(iframeElem)
+{
+    let graph = this.editorUi.editor.graph;
+    var parent = graph.getDefaultParent();
+    var model = graph.getModel();
+    
+    var v1 = null;
+    var pt = graph.getCenterInsertPoint();
+
+    model.beginUpdate();
+    try
+    {
+        v1 = graph.insertVertex(parent, null, iframeElem, pt.x, pt.y, 120, 120, 'iframe=1;');
+    }
+    finally
+    {
+        model.endUpdate();
+    }
+
+    graph.setSelectionCell(v1);
+    return {
+        "iframe": iframeElem,
+        "vertex": v1,
+    }
+}
+
+
+// Function to communicate between embedded iframes
+MoonspeakEditor.prototype.mapBroadcast = function(event, map) 
+{
+    map.forEach((featureExtraInfo, featureIFrameElem, m) => {
+        let iframeWindow = (featureIFrameElem.contentWindow || featureIFrameElem.contentDocument);
+        if (iframeWindow !== event.source) {
+            iframeWindow.postMessage(event.data, window.top.location.origin);
+        };
+    });
+}
+
 
 
 /**
@@ -169,10 +302,3 @@ mxConstraintHandler.prototype.setFocus = function(me, state, source)
     this.destroyIcons();
     this.destroyFocusHighlight();
 }
-
-// Consider all wheel events to be scroll events
-Graph.prototype.isZoomWheelEvent = function(evt)
-{
-    return true;
-}
-

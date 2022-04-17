@@ -618,13 +618,18 @@ Graph = function(container, model, renderHint, stylesheet, themes, standalone)
 	}
 	
 	// HTML entities are displayed as plain text in wrapped plain text labels
+    // except for IFrames, they are displayed as-is
 	this.cellRenderer.getLabelValue = function(state)
 	{
 		var result = mxCellRenderer.prototype.getLabelValue.apply(this, arguments);
 		
 		if (state.view.graph.isHtmlLabel(state.cell))
 		{
-			if (state.style['html'] != 1)
+            if (state.style['iframe'] == 1)
+            {
+                result = result;
+            }
+			else if (state.style['html'] != 1)
 			{
 				result = mxUtils.htmlEntities(result, false);
 			}
@@ -3309,7 +3314,7 @@ Graph.prototype.convertValueToString = function(cell)
 {
 	var value = this.model.getValue(cell);
 	
-	if (value != null && typeof(value) == 'object')
+	if (value != null && typeof(value) == 'object' && value.nodeName.toLowerCase() != 'iframe')
 	{
 		var result = null;
 		
