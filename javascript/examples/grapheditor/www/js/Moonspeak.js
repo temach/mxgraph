@@ -142,8 +142,11 @@ MoonspeakEditor.prototype.init = function()
         {
           let cell = cells[i];
           let geo = this.getCellGeometry(cell);
-          cell.value.style.width = (geo.width - iframeRectanglePadding) + "px";
-          cell.value.style.height = (geo.height - iframeRectanglePadding) + "px";
+          if (cell.value.style)
+          {
+              cell.value.style.width = (geo.width - iframeRectanglePadding) + "px";
+              cell.value.style.height = (geo.height - iframeRectanglePadding) + "px";
+          }
         }
       }
     });
